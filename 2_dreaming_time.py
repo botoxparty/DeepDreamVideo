@@ -9,7 +9,7 @@ import time
 import subprocess
 from random import randint
 
-from cStringIO import StringIO
+from io import StringIO
 import numpy as np
 import scipy.ndimage as nd
 import PIL.Image
@@ -18,8 +18,8 @@ from google.protobuf import text_format
 import caffe
 
 def extractVideo(inputdir, outputdir):
-    print subprocess.Popen('ffmpeg -i ' + inputdir + ' -f image2 ' + outputdir + '/%08d.png', shell=True,
-                           stdout=subprocess.PIPE).stdout.read()
+    print(subprocess.Popen('ffmpeg -i ' + inputdir + ' -f image2 ' + outputdir + '/%08d.png', shell=True,
+                           stdout=subprocess.PIPE).stdout.read())
 
 def showarray(a, fmt='jpeg'):
     a = np.uint8(np.clip(a, 0, 255))
@@ -111,7 +111,7 @@ def deepdream(net, base_img, image_type, iter_n=10, octave_n=4, octave_scale=1.4
 
     # prepare base images for all octaves
     octaves = [preprocess(net, base_img)]
-    for i in xrange(octave_n - 1):
+    for i in range(octave_n - 1):
         octaves.append(nd.zoom(octaves[-1], (1, 1.0 / octave_scale, 1.0 / octave_scale), order=1))
 
     src = net.blobs['data']
@@ -125,7 +125,7 @@ def deepdream(net, base_img, image_type, iter_n=10, octave_n=4, octave_scale=1.4
 
         src.reshape(1,3,h,w) # resize the network's input image size
         src.data[0] = octave_base+detail
-        for i in xrange(iter_n):
+        for i in range(iter_n):
             make_step(net, end=end, clip=clip, **step_params)
 
             # visualization
@@ -137,10 +137,10 @@ def deepdream(net, base_img, image_type, iter_n=10, octave_n=4, octave_scale=1.4
                     showarrayHQ(vis)
                 elif image_type == "jpg":
                     showarray(vis)
-            	print(octave, i, end, vis.shape)
+            	print((octave, i, end, vis.shape))
                 clear_output(wait=True)
             elif verbose == 2:
-                print(octave, i, end, vis.shape)
+                print((octave, i, end, vis.shape))
 
         # extract details produced on the current octave
         detail = src.data[0]-octave_base
@@ -183,7 +183,7 @@ def deepdream_guided(net, base_img, image_type, iter_n=10, octave_n=4, octave_sc
 
     # prepare base images for all octaves
     octaves = [preprocess(net, base_img)]
-    for i in xrange(octave_n-1):
+    for i in range(octave_n-1):
         octaves.append(nd.zoom(octaves[-1], (1, 1.0/octave_scale,1.0/octave_scale), order=1))
 
     src = net.blobs['data']
@@ -197,7 +197,7 @@ def deepdream_guided(net, base_img, image_type, iter_n=10, octave_n=4, octave_sc
 
         src.reshape(1,3,h,w) # resize the network's input image size
         src.data[0] = octave_base+detail
-        for i in xrange(iter_n):
+        for i in range(iter_n):
             make_step_guided(net, end=end, clip=clip, objective_fn=objective_fn, **step_params)
 
             # visualization
@@ -209,10 +209,10 @@ def deepdream_guided(net, base_img, image_type, iter_n=10, octave_n=4, octave_sc
                     showarrayHQ(vis)
                 elif image_type == "jpg":
                     showarray(vis)
-            	print octave, i, end, vis.shape
+            	print(octave, i, end, vis.shape)
                 clear_output(wait=True)
             elif verbose == 2:
-                print octave, i, end, vis.shape
+                print(octave, i, end, vis.shape)
 
         # extract details produced on the current octave
         detail = src.data[0]-octave_base
@@ -288,7 +288,7 @@ def main(input, output, image_type, gpu, model_path, model_name, preview, octave
     else:
         caffe.set_mode_gpu()
         caffe.set_device(int(args.gpu))
-        print("GPU mode [device id: %s]" % args.gpu)
+        print(("GPU mode [device id: %s]" % args.gpu))
         print("using GPU, but you'd still better make a cup of coffee")
 
     # Patching model to be able to compute gradients.
@@ -317,8 +317,8 @@ def main(input, output, image_type, gpu, model_path, model_name, preview, octave
         blend_at = 0.4
         blend_step = 0.1
 
-    for i in xrange(frame_i, nrframes):
-        print('Processing frame #{}').format(frame_i)
+    for i in range(frame_i, nrframes):
+        print(('Processing frame #{}').format(frame_i))
 
         #Choosing Layer
         if layers == 'customloop': #loop over layers as set in layersloop array
@@ -343,15 +343,15 @@ def main(input, output, image_type, gpu, model_path, model_name, preview, octave
         totaltime += difference
         avgtime = (totaltime / i)
         # Stats (stolen + adapted from Samim: https://github.com/samim23/DeepDreamAnim/blob/master/dreamer.py)
-        print '***************************************'
-        print 'Saving Image As: ' + saveframe
-        print 'Frame ' + str(i) + ' of ' + str(nrframes-1)
-        print 'Frame Time: ' + str(difference) + 's'
+        print('***************************************')
+        print('Saving Image As: ' + saveframe)
+        print('Frame ' + str(i) + ' of ' + str(nrframes-1))
+        print('Frame Time: ' + str(difference) + 's')
         timeleft = avgtime * ((nrframes-1) - frame_i)        
         m, s = divmod(timeleft, 60)
         h, m = divmod(m, 60)
-        print 'Estimated Total Time Remaining: ' + str(timeleft) + 's (' + "%d:%02d:%02d" % (h, m, s) + ')'
-        print '***************************************'
+        print('Estimated Total Time Remaining: ' + str(timeleft) + 's (' + "%d:%02d:%02d" % (h, m, s) + ')')
+        print('***************************************')
 
         PIL.Image.fromarray(np.uint8(frame)).save(saveframe)
         newframe = input + "/%08d.%s" % (frame_i,image_type)
